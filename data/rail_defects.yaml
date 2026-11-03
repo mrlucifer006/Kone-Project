@@ -1,0 +1,8 @@
+names:
+  0: rail_surface_wear
+  1: joint_misalignment
+  2: pitting_galling
+  3: rail_corrosion
+path: /run/media/mrlucifer006/346E71E66E71A0F2/Personal Projects/KONE project/data/annotated_rail_yolo
+train: train/images
+val: val/images

@@ -1,0 +1,94 @@
+# ElevatorGuard-AI System Configuration
+system:
+  name: "ElevatorGuard-AI"
+  version: "1.0.0"
+  device: "cpu" # 'cuda' or 'cpu'
+
+elevator:
+  floors: 8
+  floor_height_m: 3.5
+  max_velocity_mps: 2.0
+  max_acceleration_mps2: 1.0
+  jerk_mps3: 1.5
+  rated_load_kg: 1000
+  car_mass_kg: 1200
+  counterweight_mass_kg: 1700
+  num_ropes: 4
+  rope_diameter_mm: 12.0
+  rope_nominal_strength_kn: 85.0
+  sheave_diameter_mm: 480.0
+
+vision:
+  model_type: "yolov8n-seg" # or "yolov8n"
+  model_weights: "models/yolo_cable_detector.pt"
+  confidence_threshold: 0.45
+  iou_threshold: 0.50
+  image_width: 640
+  image_height: 640
+  iso_4309:
+    n_max_wire_breaks: 6 # Discard criterion in 6d length
+    max_wear_pct: 0.10   # 10% outer diameter wear discard
+    max_corrosion_pct: 0.15 # 15% corrosion coverage
+    weight_breaks: 0.50
+    weight_wear: 0.30
+    weight_corrosion: 0.20
+
+telemetry:
+  sampling_rate_hz: 100
+  window_size: 128
+  step_size: 32
+  features:
+    - "acc_rms_x"
+    - "acc_rms_y"
+    - "acc_rms_z"
+    - "acc_kurtosis_z"
+    - "acc_peak_z"
+    - "spectral_kurtosis"
+    - "tension_mean"
+    - "tension_std"
+    - "tension_imbalance_ratio"
+  tension_imbalance_threshold: 0.15 # Alert if imbalance > 15% across ropes
+  vibration_rms_alarm_threshold: 0.45 # m/s^2 ISO 18738 ride quality limit
+
+bilstm:
+  input_dim: 9
+  hidden_dim: 64
+  num_layers: 2
+  attention_dim: 32
+  dropout: 0.2
+  learning_rate: 0.001
+  batch_size: 32
+  epochs: 25
+  model_path: "models/bilstm_rul.pt"
+
+fusion:
+  alpha_vision_weight: 0.55
+  beta_telemetry_weight: 0.45
+  hi_critical_discard: 0.20
+  hi_warning_threshold: 0.45
+  hi_caution_threshold: 0.65
+  nominal_lifespan_trips: 150000
+
+esp32:
+  port: "/dev/ttyUSB0"
+  baudrate: 115200
+  timeout_sec: 1.0
+  virtual_mode: true
+  websocket_host: "127.0.0.1"
+  websocket_port: 8765
+  telemetry_interval_ms: 100
+
+firebase:
+  database_url: "https://elevatorguard-kone-default-rtdb.firebaseio.com"
+  auth_key: ""
+  offline_mode: true
+  sync_interval_sec: 1.0
+  elevators:
+    - "LIFT-CAR-01"
+    - "LIFT-CAR-02"
+    - "LIFT-EXPRESS-03"
+
+dashboard:
+  host: "0.0.0.0"
+  port: 8501
+  api_port: 8000
